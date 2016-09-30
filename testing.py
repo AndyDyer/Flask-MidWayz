@@ -18,12 +18,29 @@ def googleTwoPoints(data,mathmid, travel1, travel2, key):
     url2 ="https://maps.googleapis.com/maps/api/directions/json?origin="+ str(data[2]) + ',' + str(data[3]) + "&destination=" + str(mathmid[0]) + ',' + str(mathmid[1]) +"&mode="+ travel2 + "&key=" + key
     googleResponse = urllib.urlopen(url1)
     jsonResponse = json.loads(googleResponse.read())
-    
+    #print jsonResponse
+    print "heya, ", type(jsonResponse)
+    print type(jsonResponse['routes'])
+    print len(jsonResponse['routes'])
+    print jsonResponse.keys(), " initial dictionary"
+    for j in jsonResponse['routes']:
+        print j.keys(), "  in loop with other keys"
+        if 'legs' in  j.keys():
+            print len(j['legs'])
+            for k in j['legs']:
+                print type(k)
+                print k.keys()
+                print k['steps']
+                print type(k['steps'])
+                for l in k['steps']:
+                    print type(l)
+                    print l
+    #print dir(jsonResponse)
     #test = json.dumps([s['legs']for s in jsonResponse['routes']], indent=3)
    
     #test2 = json.loads(test)
     #Trying to access the steps level of this json. 
-    pprint (jsonResponse)
+    #pprint (jsonResponse)
     
    
     
