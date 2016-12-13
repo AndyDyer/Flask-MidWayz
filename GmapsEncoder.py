@@ -2,6 +2,7 @@ import math
 import requests
 import json
 import urllib
+import MathUtils
 from pprint import pprint
 
 #Ok so we get lat and lngs for every bit with time. so lat0 lng 1 time 2  we can access by two lists based off i%3 = 0,1 or 2
@@ -49,7 +50,7 @@ def drivingEncoder(jsonResponse):
                 aArray.insert(0,k['duration']['value'])
     aArray = list(map(int, aArray))
     return aArray
-
+'''
 def transitEncoder(jsonResponse):
     aArray=[]
     pprint (jsonResponse)
@@ -63,11 +64,12 @@ def transitEncoder(jsonResponse):
                 #print len(l)
                 #print 'k', k.keys()
                 print (len(k))
-
                 #for n in l['steps']:
+'''
+#TODO how do I make this smarter while verifying with gmaps. 
 def twoList(list1, list2):
     print ('list1', list1[0], 'list2', list2[0])
-    while (abs(list1[0] - list2[0]) > 180):
+    while (abs(list1[0] - list2[0]) > 100):
         print ('list1', list1[0], 'list2', list2[0])
         if (list1[0] > list2[0]):
             list2.append(list1[-3])
@@ -78,6 +80,7 @@ def twoList(list1, list2):
             list1.pop()
             list1.pop()
             list1.pop()
+
         else:
             list1.append(list2[-3])
             list1.append(list2[-2])
@@ -87,7 +90,7 @@ def twoList(list1, list2):
             list2.pop()
             list2.pop()
             list2.pop()
-
+        print ('list1', list1[0], 'list2', list2[0], 'last two points', list1[-1], list2[-1], 'abs ' , abs(list1[0] - list2[0]))
 def googleTwoPoints(data,mathmid, travel1, travel2, key):
     url1 ="https://maps.googleapis.com/maps/api/directions/json?origin="+ str(data[0]) + ',' + str(data[1]) + "&destination=" + str(mathmid[0]) + ',' + str(mathmid[1]) +"&mode="+ travel1 + "&key=" + key
     url2 ="https://maps.googleapis.com/maps/api/directions/json?origin="+ str(data[2]) + ',' + str(data[3]) + "&destination=" + str(mathmid[0]) + ',' + str(mathmid[1]) +"&mode="+ travel2 + "&key=" + key
@@ -124,7 +127,6 @@ def googleTwoPoints(data,mathmid, travel1, travel2, key):
     if (travel2 == 'bicycling'):
         print ('bicycling')
         Route2 = bicyclingEncoder(jsonResponse2)
-
     twoList(Route1, Route2)
 
 def circleCenter(lat1, lon1, lat2, lon2):
@@ -144,7 +146,7 @@ def circleCenter(lat1, lon1, lat2, lon2):
     return x
 
 data = [42.004761, -87.662874, 41.92246142342, -87.637942343239]
-mathmid = circleCenter(data[0],data[1],data[2],data[3])
+mathmid = MathUtils.circleCenter(data[0],data[1],data[2],data[3])
 mykey = "AIzaSyBVLrwa5Xh3KV1I43rvDNNfT04kmEaNG6Q"
 
-googleTwoPoints(data, mathmid, "driving", "transit", mykey)
+googleTwoPoints(data, mathmid, "driving", "driving", mykey)
