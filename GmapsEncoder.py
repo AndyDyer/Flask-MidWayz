@@ -4,15 +4,10 @@ import json
 import urllib
 import MathUtils
 from pprint import pprint
+from sets import Set
 
-#Ok so we get lat and lngs for every bit with time. so lat0 lng 1 time 2  we can access by two lists based off i%3 = 0,1 or 2
-'''
-so we are tracking these values and the total time it takes to get from A - M and B - M.
-If these things are fine ie difference > 180s(flexible) we do nothing
-if we do need to change we look at the array for each point.
 
-We determine whether or not to look through A-Array or B-Array
-'''
+
 #AIzaSyBVLrwa5Xh3KV1I43rvDNNfT04kmEaNG6Q
 
 #TODO Try and Catch these requests
@@ -25,7 +20,7 @@ def bicyclingEncoder(jsonResponse):
                     aArray.append(l['end_location']['lng'])
                     aArray.append(l['duration']['value'])
                 aArray.insert(0,k['duration']['value'])
-    aArray = list(map(int, aArray))
+    aArray = list(map(float, aArray))
     return aArray
 def walkingEncoder(jsonResponse):
     aArray = [0]
@@ -36,7 +31,7 @@ def walkingEncoder(jsonResponse):
                     aArray.append(l['end_location']['lng'])
                     aArray.append(l['duration']['value'])
                 aArray.insert(0,k['duration']['value'])
-    aArray = list(map(int, aArray))
+    aArray = list(map(float, aArray))
     return aArray
 def drivingEncoder(jsonResponse):
     aArray = []
@@ -48,7 +43,7 @@ def drivingEncoder(jsonResponse):
                     aArray.append(l['end_location']['lng'])
                     aArray.append(l['duration']['value'])
                 aArray.insert(0,k['duration']['value'])
-    aArray = list(map(int, aArray))
+    aArray = list(map(float, aArray))
     return aArray
 '''
 def transitEncoder(jsonResponse):
@@ -57,7 +52,7 @@ def transitEncoder(jsonResponse):
     for j in jsonResponse['routes']:
         for k in j['legs']:
             for l in k['steps']:
-              #  print l['end_location']['lat']
+              # print l['end_location']['lat']
                # print l['end_location']['lng']
                 #print l['duration']['value']
                 #print 'l',l.keys()
@@ -66,31 +61,39 @@ def transitEncoder(jsonResponse):
                 print (len(k))
                 #for n in l['steps']:
 '''
-#TODO how do I make this smarter while verifying with gmaps. 
+#TODO how do I make this smarter while verifying with gmaps.
 def twoList(list1, list2):
-    print ('list1', list1[0], 'list2', list2[0])
-    while (abs(list1[0] - list2[0]) > 100):
-        print ('list1', list1[0], 'list2', list2[0])
-        if (list1[0] > list2[0]):
-            list2.append(list1[-3])
-            list2.append(list1[-2])
-            list2.append(list1[-1])
-            list1[0] -= list1[-1]
-            list2[0] += list1[-1]
-            list1.pop()
-            list1.pop()
-            list1.pop()
-
-        else:
-            list1.append(list2[-3])
-            list1.append(list2[-2])
-            list1.append(list2[-1])
-            list2[0] -= list1[-1]
-            list1[0] += list1[-1]
-            list2.pop()
-            list2.pop()
-            list2.pop()
-        print ('list1', list1[0], 'list2', list2[0], 'last two points', list1[-1], list2[-1], 'abs ' , abs(list1[0] - list2[0]))
+    abset = Set()
+    abval = abs(list1[0] - list2[0])
+    while (abval > 4):
+        abval = abs(list1[0] - list2[0])
+        try:
+            if (list1[0] > list2[0]):
+                list2.append(list1[-3])
+                list2.append(list1[-2])
+                list2.append(list1[-1])
+                list1[0] -= list1[-1]
+                list2[0] += list1[-1]
+                list1.pop()
+                list1.pop()
+                list1.pop()
+            else:
+                list1.append(list2[-3])
+                list1.append(list2[-2])
+                list1.append(list2[-1])
+                list2[0] -= list1[-1]
+                list1[0] += list1[-1]
+                list2.pop()
+                list2.pop()
+                list2.pop()
+            if abval in abset:
+                raise Exception("Breaking Infinite Loop")
+            else:
+                abset.add(abval)
+        except Exception as e:
+            break
+    finalpair ={'lat': (list1[-3]+list2[-3])/2, 'lng': (list1[-2]+list2[-2])/2 }
+    return finalpair
 def googleTwoPoints(data,mathmid, travel1, travel2, key):
     url1 ="https://maps.googleapis.com/maps/api/directions/json?origin="+ str(data[0]) + ',' + str(data[1]) + "&destination=" + str(mathmid[0]) + ',' + str(mathmid[1]) +"&mode="+ travel1 + "&key=" + key
     url2 ="https://maps.googleapis.com/maps/api/directions/json?origin="+ str(data[2]) + ',' + str(data[3]) + "&destination=" + str(mathmid[0]) + ',' + str(mathmid[1]) +"&mode="+ travel2 + "&key=" + key
@@ -127,6 +130,11 @@ def googleTwoPoints(data,mathmid, travel1, travel2, key):
     if (travel2 == 'bicycling'):
         print ('bicycling')
         Route2 = bicyclingEncoder(jsonResponse2)
+    else:
+        raise Exception("invalid mode of transport")
+    except Exception as e:
+        break
+
     twoList(Route1, Route2)
 
 def circleCenter(lat1, lon1, lat2, lon2):
@@ -145,8 +153,10 @@ def circleCenter(lat1, lon1, lat2, lon2):
     x = [finLat, finLon]
     return x
 
+##Below is example data just to prove it works. Same as below request.
+##http://127.0.0.1:5000/twoPoints?Lat1=42.004761,Lng1=-87.662874,Mode1=driving,Lat2=41.92246142342,Lng2=-87.637942343239,Mode2=driving
+
 data = [42.004761, -87.662874, 41.92246142342, -87.637942343239]
 mathmid = MathUtils.circleCenter(data[0],data[1],data[2],data[3])
 mykey = "AIzaSyBVLrwa5Xh3KV1I43rvDNNfT04kmEaNG6Q"
-
 googleTwoPoints(data, mathmid, "driving", "driving", mykey)
