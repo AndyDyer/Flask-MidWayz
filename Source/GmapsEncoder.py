@@ -104,7 +104,6 @@ def googleTwoPoints(data,mathmid, travel1, travel2, key):
     twoList(Route1, Route2)
 ##Below is example data just to prove it works. Same as below request.
 ##http://127.0.0.1:5000/twoPoints?Lat1=42.004761,Lng1=-87.662874,Mode1=driving,Lat2=41.92246142342,Lng2=-87.637942343239,Mode2=driving
-mykey = "AIzaSyBVLrwa5Xh3KV1I43rvDNNfT04kmEaNG6Q"
 data = [42.004761, -87.662874, 41.92246142342, -87.637942343239]
 mathmid = MathUtils.circleCenter(data[0],data[1],data[2],data[3])
 googleTwoPoints(data, mathmid, "transit", "driving", mykey)
